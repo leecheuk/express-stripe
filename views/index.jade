@@ -1,5 +1,49 @@
 extends layout
 
+block head
+  script(src="https://checkout.stripe.com/checkout.js")
+
 block content
-  h1= title
-  p Welcome to #{title}
+  h1 Express.js with Stripe
+  div.alert.alert-warning Sample visa card: 4242 4242 4242 4242
+  p#msg Please click to buy
+  div#shop
+    button.btn.btn-primary#buy-btn Buy
+  script.
+    // Configure checkout
+    var checkoutHandler = StripeCheckout.configure({
+      key: "pk_test_sOgY7qHRXr2mmafoI5lTTZhp00KKZFF7aG",
+      locale: "auto"
+    });
+
+    // Listen to click and show payment form
+    var button = document.getElementById('buy-btn');
+    button.addEventListener("click", function (e) {
+      checkoutHandler.open({
+        name: "Express store",
+        description: "Sample charge",
+        token: handleToken
+      })
+    })
+
+    // POST request to charge user
+    function handleToken (token) {
+      var btn = document.getElementById('buy-btn')
+      btn.innerHTML = "Processing..."
+      btn.disabled = true
+      fetch("/charge", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(token)
+      }).then(res => {
+        if (!res.ok) {
+          throw res;
+        }
+        return res.json();
+      }).then(output => {
+        if (output.status === "succeeded") {
+          document.getElementById('msg').innerHTML = "Thank you for your purchase!"
+          document.getElementById('buy-btn').innerHTML = "Transaction complete"
+        }
+      })
+    }

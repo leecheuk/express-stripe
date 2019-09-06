@@ -13,7 +13,7 @@ router.get('/', function(req, res, next) {
 router.post("/charge", function(req, res) {
   const user = {
     email: req.body.email,
-    card: req.body.card
+    card: req.body.id
   }
   stripe.customers.create({
     email: user.email,
